@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useStore } from "../../store/useStore";
 import { useAuth } from "../../hooks/useAuth";
 import { Button, Alert } from "../shared/UI";
-//import { Icons } from "../shared/Icons";
+const API_URL = "http://localhost:8000/api/v1";
 
 export default function MFAModal() {
   const { hideMFA, mfaPending } = useStore();
@@ -28,14 +28,28 @@ export default function MFAModal() {
       refs.current[i - 1]?.focus();
   }
 
-  function verify() {
+  async function verify() {
     const code = digits.join("");
     if (code.length < 6) {
       setError("Please enter all 6 digits.");
       return;
     }
-    completeMFA(mfaPending);
-    hideMFA();
+    try {
+      const res = await fetch(`${API_URL}/auth/verify-mfa`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, userId: mfaPending?.id }),
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!res.ok) {
+        setError("Invalid MFA code. Please try again.");
+        return;
+      }
+      completeMFA(mfaPending);
+      hideMFA();
+    } catch {
+      setError("Could not reach the server.");
+    }
   }
 
   function cancel() {
