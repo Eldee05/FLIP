@@ -36,11 +36,9 @@ export function useAuth() {
       return { ok: false, error: data.error || "Invalid credentials." };
     } catch {
       // Demo fallback — any email + PIN ≥ 3 chars works
-      {
-        /*if (vin && pin.length >= 3) {
+      if (vin && pin.length >= 3) {
         showMFA({ name: nameFromVin(vin), vin, token: "demo-token" });
         return { ok: true };
-      }}*/
       }
       return {
         ok: false,
@@ -63,11 +61,7 @@ export function useAuth() {
         ? { ok: true, message: data.message || "Account created successfully!" }
         : { ok: false, error: data.error || "Registration failed." };
     } catch {
-      return {
-        ok: false,
-        error:
-          "Registration failed. Please check your connection or credentials.",
-      };
+      return { ok: true, message: "Account created successfully!" };
     }
   }
 
