@@ -145,7 +145,7 @@ export default function SignUpPage({ onGoLogin }) {
       }
       setStep(1);
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
-    } catch (e) {
+    } catch {
       return err("Could not reach the server. Check your connection.");
     } finally {
       setBusy(false);
@@ -164,13 +164,28 @@ export default function SignUpPage({ onGoLogin }) {
       otpRefs.current[i - 1]?.focus();
     }
   }
-  function verifyOtp(e) {
+  async function verifyOtp(e) {
     e.preventDefault();
     setError("");
     const code = otp.join("");
     if (code.length < 6) return err("Please enter all 6 digits.");
-
-    setStep(2);
+    try {
+      const res = await fetch(`${API_URL}/auth/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code }),
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        return err(body.detail || "Invalid or expired code. Try again.");
+      }
+      setStep(2);
+    } catch {
+      return err("Could not reach the server. Check your connection.");
+    } finally {
+      setBusy(false);
+    }
   }
   function resendOtp() {
     setOtp(["", "", "", "", "", ""]);
@@ -400,8 +415,8 @@ export default function SignUpPage({ onGoLogin }) {
               />
             ))}
           </div>
-          <Button type="submit" variant="gold" size="md">
-            Verify Code
+          <Button type="submit" variant="gold" size="md" disabled={busy}>
+            {busy ? "⏳ Verifying…" : "Verify Code"}
           </Button>
         </form>
         <p
@@ -427,16 +442,6 @@ export default function SignUpPage({ onGoLogin }) {
           >
             Resend Code
           </button>
-        </p>
-        <p
-          style={{
-            textAlign: "center",
-            marginTop: "8px",
-            fontSize: "11px",
-            color: "var(--text-muted)",
-          }}
-        >
-          Demo: enter any 6 digits
         </p>
       </>,
     );
