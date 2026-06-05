@@ -200,26 +200,13 @@ export default function LoginPage({ onGoSignUp }) {
             marginTop: "14px",
             padding: "8px 12px",
             borderRadius: "var(--radius-sm)",
-            background: s.bg,
+
             color: s.color,
             fontSize: "11px",
             fontWeight: 600,
             textAlign: "center",
           }}
-        >
-          {s.dot} {s.text}
-        </div>
-
-        <p
-          style={{
-            marginTop: "12px",
-            textAlign: "center",
-            fontSize: "11px",
-            color: "var(--text-muted)",
-          }}
-        >
-          Demo: any email + 3-char PIN
-        </p>
+        ></div>
       </div>
     </div>
   );
