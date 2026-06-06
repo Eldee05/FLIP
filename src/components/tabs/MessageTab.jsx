@@ -13,9 +13,9 @@ import {
   Alert,
 } from "../shared/UI";
 
-const EJ_SERVICE = "service_ohp2dre";
-const EJ_TEMPLATE = "template_a2gpnc6";
-const EJ_KEY = "IiALLmUsK981iqKNi"; //
+const EJ_SERVICE = "service_o19agur";
+const EJ_TEMPLATE = "template_6y2432k";
+const EJ_KEY = "QGsZz3A5V2T3x093H"; //
 
 const THREADS = [
   {
@@ -88,7 +88,7 @@ export default function MessageTab() {
           from_email: senderEmail,
           subject: subject,
           message: body,
-          to_email: "federalpolicy25@gmail.com",
+          to_email: "federalpolicy24@gmail.com",
           sent_at: new Date().toLocaleString(),
         },
         EJ_KEY,
@@ -291,7 +291,7 @@ export default function MessageTab() {
                 >
                   📨 Your message will be emailed directly to your solicitor at{" "}
                   <strong style={{ color: "var(--gold-light)" }}>
-                    federalpolicy25@gmail.com
+                    federalpolicy24@gmail.com
                   </strong>
                 </p>
 
@@ -330,7 +330,7 @@ export default function MessageTab() {
                         border: "1px solid var(--border)",
                       }}
                     >
-                      Solicitor — federalpolicy25@gmail.com
+                      Solicitor — federalpolicy24@gmail.com
                     </div>
                   </FormGroup>
 

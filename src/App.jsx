@@ -11,7 +11,7 @@ import ReadingProgress from "./components/shared/ReadingProgress.jsx";
 import A11yToolbar from "./components/shared/A11yToolbar.jsx";
 
 export default function App() {
-  const { isLoggedIn, mfaVisible, theme, checkBackend } = useStore();
+  const { isLoggedIn, mfaVisible, theme } = useStore(); // removed this fro now "checkBackend"
   const [view, setView] = React.useState("login"); // 'login' | 'signup'
 
   useKeyboard();
@@ -22,10 +22,12 @@ export default function App() {
   }, [theme]);
 
   // Backend health check — silent, no toast
-  useEffect(() => {
+  {
+    /*useEffect(() => {
     const interval = setInterval(checkBackend, 30_000);
     return () => clearInterval(interval);
-  }, [checkBackend]);
+  }, [checkBackend]);*/
+  }
 
   return (
     <>
