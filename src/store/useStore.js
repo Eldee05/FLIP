@@ -80,10 +80,18 @@ export const useStore = create((set, get) => ({
 
   // ── Documents ────────────────────────────────────────────────
   uploadedFiles: [],
+
+  setUploadedFiles: (files) => set({ uploadedFiles: files }),
+
   addUploadedFile: (file) =>
-    set((s) => ({ uploadedFiles: [...s.uploadedFiles, file] })),
+    set((s) => ({
+      uploadedFiles: [...s.uploadedFiles, file],
+    })),
+
   removeUploadedFile: (id) =>
-    set((s) => ({ uploadedFiles: s.uploadedFiles.filter((f) => f.id !== id) })),
+    set((s) => ({
+      uploadedFiles: s.uploadedFiles.filter((f) => f.id !== id),
+    })),
 
   // ── Backend ──────────────────────────────────────────────────
   checkBackend: async () => {
