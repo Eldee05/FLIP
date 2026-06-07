@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useStore } from "../../store/useStore";
 import {
   Card,
@@ -11,6 +11,12 @@ import {
   Button,
   Badge,
 } from "../shared/UI";
+import {
+  uploadDocument,
+  deleteDocument,
+  getDownloadUrl,
+  listDocuments,
+} from "../../services/documentService";
 //import { Icons } from "../shared/Icons";
 
 const EXISTING_DOCS = [
@@ -39,6 +45,15 @@ const EXISTING_DOCS = [
 
 const TYPE_ICONS = { pdf: "📄", image: "🖼️", doc: "📝", other: "📎" };
 
+const MAX_SIZES = {
+  pdf: 25 * 1024 * 1024,
+  image: 10 * 1024 * 1024,
+  doc: 15 * 1024 * 1024,
+  audio: 50 * 1024 * 1024,
+  video: 100 * 1024 * 1024,
+  other: 10 * 1024 * 1024,
+};
+
 function fileType(file) {
   if (file.type.startsWith("image/")) return "image";
   if (file.type === "application/pdf") return "pdf";
@@ -58,31 +73,87 @@ function formatSize(bytes) {
 }
 
 export default function DocumentsTab() {
-  const { uploadedFiles, addUploadedFile, removeUploadedFile } = useStore();
+  const {
+    uploadedFiles,
+    addUploadedFile,
+    removeUploadedFile,
+    setUploadedFiles,
+  } = useStore();
+  console.log("RENDER FILES:", uploadedFiles);
   const [dragging, setDragging] = useState(false);
   const [previewing, setPreviewing] = useState(null);
   const inputRef = useRef();
 
-  function processFiles(fileList) {
-    Array.from(fileList).forEach((f) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
+  useEffect(() => {
+    async function loadFiles() {
+      try {
+        const files = await listDocuments();
+
+        console.log("SUPABASE FILES:", files);
+
+        const mappedFiles = files.map((file) => ({
+          id: file.id || file.name,
+          name: file.name.replace(/^\d+-/, ""),
+          size: file.metadata?.size || 0,
+          type: "other",
+          fileName: file.name,
+          uploaded: new Date(file.created_at).toLocaleDateString(),
+        }));
+
+        console.log("FILES TO STORE:", mappedFiles);
+
+        setUploadedFiles(mappedFiles);
+      } catch (err) {
+        console.error("Failed to load documents", err);
+      }
+    }
+
+    loadFiles();
+  }, []);
+
+  async function processFiles(fileList) {
+    for (const f of Array.from(fileList)) {
+      try {
+        const type = fileType(f);
+
+        const maxSize = MAX_SIZES[type] || MAX_SIZES.other;
+
+        if (f.size > maxSize) {
+          alert(
+            `${f.name} exceeds the maximum size of ${formatSize(maxSize)}.`,
+          );
+          continue;
+        }
+
+        const uploaded = await uploadDocument(f);
+
         addUploadedFile({
           id: Date.now() + Math.random(),
-          name: f.name,
-          size: f.size,
-          type: fileType(f),
+
+          name: uploaded.originalName,
+
+          size: uploaded.size,
+
+          type,
+
           mimeType: f.type,
-          dataUrl: e.target.result,
+
+          fileName: uploaded.fileName,
+
           uploaded: new Date().toLocaleDateString("en-GB", {
             day: "2-digit",
             month: "short",
             year: "numeric",
           }),
         });
-      };
-      reader.readAsDataURL(f);
-    });
+      } catch (err) {
+        console.error("UPLOAD ERROR:", err);
+
+        alert(
+          err?.message || JSON.stringify(err) || `Failed to upload ${f.name}`,
+        );
+      }
+    }
   }
 
   function onDrop(e) {
@@ -96,11 +167,18 @@ export default function DocumentsTab() {
     e.target.value = ""; // allow re-upload of same file
   }
 
-  function download(file) {
-    const a = document.createElement("a");
-    a.href = file.dataUrl;
-    a.download = file.name;
-    a.click();
+  async function download(file) {
+    try {
+      const url = await getDownloadUrl(file.fileName);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file.name;
+      a.click();
+    } catch (err) {
+      console.error(err);
+      alert("Unable to download file.");
+    }
   }
 
   return (
@@ -173,7 +251,7 @@ export default function DocumentsTab() {
           </div>
 
           {/* Upload progress / file list */}
-          {uploadedFiles.length > 0 && (
+          {uploadedFiles?.length > 0 && (
             <div
               style={{
                 marginTop: "16px",
@@ -182,7 +260,7 @@ export default function DocumentsTab() {
                 gap: "8px",
               }}
             >
-              {uploadedFiles.map((f) => (
+              {uploadedFiles?.map((f) => (
                 <div
                   key={f.id}
                   style={{
@@ -229,7 +307,16 @@ export default function DocumentsTab() {
                     ⬇ Download
                   </Button>
                   <button
-                    onClick={() => removeUploadedFile(f.id)}
+                    onClick={async () => {
+                      try {
+                        await deleteDocument(f.fileName);
+
+                        removeUploadedFile(f.id);
+                      } catch (err) {
+                        console.error(err);
+                        alert("Failed to delete file.");
+                      }
+                    }}
                     style={{
                       background: "none",
                       border: "none",
