@@ -19,6 +19,7 @@ import SolicitorsTab from "../components/tabs/SolicitorsTab.jsx";
 import MessagesTab from "../components/tabs/MessageTab.jsx";
 import DocumentsTab from "../components/tabs/DocumentsTab.jsx";
 
+// Wallet is intentionally NOT in TAB_MAP — it opens as a modal from Topbar
 const TAB_MAP = {
   overview: OverviewTab,
   cases: CasesTab,
