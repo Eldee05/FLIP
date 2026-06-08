@@ -3,55 +3,36 @@
 
 /* ── Design Tokens ─────────────────────────────────────────── */
 :root {
-  /* Backgrounds */
   --bg-primary: #08111f;
   --bg-secondary: #0c1a30;
   --bg-card: #111f38;
   --bg-hover: #162540;
-
-  /* Text */
   --text-primary: #f0ede8;
   --text-secondary: rgba(240, 237, 232, 0.65);
   --text-muted: rgba(240, 237, 232, 0.35);
-
-  /* Brand */
   --gold: #c9a84cef;
   --gold-light: #a49163;
   --gold-dark: #9a7a2e;
   --gold-glow: rgba(162, 135, 58, 0.15);
-
-  /* Semantic */
   --red: #e05252;
   --green: #3db88a;
   --blue: #4f8ef7;
   --purple: #9f7aea;
-
-  /* Borders */
   --border: rgba(201, 168, 76, 0.08);
   --border-light: rgba(201, 168, 76, 0.16);
   --border-hover: rgba(201, 168, 76, 0.28);
-
-  /* Radii */
   --radius-sm: 6px;
   --radius: 10px;
   --radius-lg: 16px;
   --radius-xl: 24px;
-
-  /* Shadows */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
   --shadow-gold: 0 4px 20px rgba(201, 168, 76, 0.2);
-
-  /* Transitions */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --transition: 220ms var(--ease);
-
-  /* Typography */
   --font-display: "Cormorant Garamond", Georgia, serif;
   --font-body: "DM Sans", system-ui, sans-serif;
-
-  /* Sidebar width */
   --sidebar-w: 252px;
   --topbar-h: 64px;
 }
@@ -94,7 +75,6 @@ body {
     color var(--transition);
 }
 
-/* Subtle grain overlay for depth */
 body::before {
   content: "";
   position: fixed;
@@ -196,6 +176,16 @@ textarea {
     transform: translateX(0);
   }
 }
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 @keyframes slideInDown {
   from {
     opacity: 0;
@@ -215,14 +205,6 @@ textarea {
     opacity: 0.5;
   }
 }
-@keyframes shimmer {
-  from {
-    background-position: -200% center;
-  }
-  to {
-    background-position: 200% center;
-  }
-}
 
 .animate-fade-up {
   animation: fadeUp 0.4s var(--ease) both;
@@ -234,18 +216,40 @@ textarea {
   animation: slideInRight 0.35s var(--ease) both;
 }
 
+/* ── Mobile Sidebar Drawer ──────────────────────────────────── */
+/* Overlay that dims the page when drawer is open */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 149;
+  animation: fadeIn 0.2s var(--ease);
+}
+.sidebar-overlay.open {
+  display: block;
+}
+
+/* The sidebar itself — slides in from left on mobile */
+.sidebar-drawer {
+  transition: transform 0.3s var(--ease);
+}
+
 /* ── Print ──────────────────────────────────────────────────── */
 @media print {
-  .sidebar,
+  .sidebar-drawer,
   .topbar,
   .chat-widget,
   .a11y-toolbar,
   .reading-progress,
-  .toast-container {
+  .toast-container,
+  .sidebar-overlay,
+  .mobile-menu-btn {
     display: none !important;
   }
   .dash-main {
     max-width: 100% !important;
+    padding: 0 !important;
   }
   body {
     background: white;
@@ -253,22 +257,201 @@ textarea {
   }
 }
 
-/* ── Responsive ─────────────────────────────────────────────── */
+/* ── Responsive Breakpoints ─────────────────────────────────── */
+
+/* Large desktop — shrink sidebar slightly */
 @media (max-width: 1200px) {
   :root {
     --sidebar-w: 220px;
   }
 }
+
+/* Tablet — sidebar becomes a slide-in drawer */
 @media (max-width: 900px) {
   :root {
-    --sidebar-w: 0px;
+    --sidebar-w: 260px; /* keep a good drawer width */
+    --topbar-h: 60px;
   }
-  .sidebar {
+
+  /* Sidebar is off-screen by default, slides in when .open */
+  .sidebar-drawer {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    z-index: 150 !important;
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar-drawer.open {
+    transform: translateX(0);
+    animation: slideInLeft 0.3s var(--ease);
+  }
+
+  /* Main content takes full width */
+  .dash-main {
+    padding: 20px 16px !important;
+  }
+}
+
+/* Mobile — tighter spacing and font scaling */
+@media (max-width: 600px) {
+  :root {
+    --topbar-h: 56px;
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  .dash-main {
+    padding: 16px 12px !important;
+  }
+
+  /* Stats grid: 2 columns on mobile */
+  .stats-grid-4 {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* Cards take full width */
+  .grid-2-1,
+  .grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Messages layout stacks vertically */
+  .messages-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Solicitors cards single column */
+  .solicitors-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Resource cards 2 columns */
+  .resources-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Tables scroll horizontally instead of breaking */
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Auth cards — full width with less padding */
+  .auth-card {
+    padding: 28px 20px !important;
+    border-radius: var(--radius-lg) !important;
+  }
+
+  /* Chat widget closer to edge */
+  .chat-widget {
+    bottom: 12px !important;
+    right: 12px !important;
+  }
+
+  /* A11y toolbar closer to edge */
+  .a11y-toolbar {
+    bottom: 12px !important;
+    left: 12px !important;
+  }
+
+  /* Topbar brand text hidden on very small screens */
+  .topbar-brand-text {
+    display: none;
+  }
+
+  /* Search bar hidden on mobile — accessible via search icon instead */
+  .topbar-search {
+    display: none;
+  }
+}
+
+/* Extra small — phones under 400px */
+@media (max-width: 400px) {
+  :root {
+    --topbar-h: 52px;
+  }
+
+  .dash-main {
+    padding: 12px 10px !important;
+  }
+
+  .stats-grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Mobile-specific element visibility ─────────────────────── */
+/* These target className props set in Topbar.jsx */
+
+/* Hamburger: hidden on desktop, shown on tablet/mobile */
+.mobile-menu-btn {
+  display: none !important;
+}
+.mobile-search-btn {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  /* Show hamburger on tablet and mobile */
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+  /* Show mobile search icon */
+  .mobile-search-btn {
+    display: flex !important;
+  }
+  /* Hide desktop search bar */
+  .topbar-search {
     display: none !important;
   }
 }
+
 @media (max-width: 600px) {
-  .stats-grid-4 {
+  /* Hide brand text on small phones — logo only */
+  .topbar-brand-text {
+    display: none !important;
+  }
+}
+
+/* ── Tab content responsive helpers ─────────────────────────── */
+/* Used by tab components via inline style overrides */
+@media (max-width: 900px) {
+  /* Two-column grids collapse to single column */
+  [style*="gridTemplateColumns: 2fr 1fr"],
+  [style*="grid-template-columns: 2fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  [style*="gridTemplateColumns: 280px 1fr"],
+  [style*="grid-template-columns: 280px 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Four-column stat grids → 2 columns */
+  [style*="repeat(4,1fr)"],
+  [style*="repeat(4, 1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  /* Solicitor cards → single column */
+  [style*="minmax(300px, 1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* Resource cards → 2 columns */
+  [style*="minmax(220px, 1fr)"] {
     grid-template-columns: 1fr 1fr !important;
+  }
+  /* Tables get horizontal scroll wrapper */
+  table {
+    min-width: 480px;
+  }
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
