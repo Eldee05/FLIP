@@ -43,7 +43,7 @@ const EXISTING_DOCS = [
   },
 ];
 
-const TYPE_ICONS = { pdf: "📄", image: "🖼️", doc: "📝", other: "📎" };
+const TYPE_ICONS = { pdf: "📄", image: "🖼️", doc: "📝", other: "🗃️" };
 
 const MAX_SIZES = {
   pdf: 25 * 1024 * 1024,
@@ -164,7 +164,7 @@ export default function DocumentsTab() {
 
   function onInputChange(e) {
     processFiles(e.target.files);
-    e.target.value = ""; // allow re-upload of same file
+    e.target.value = "";
   }
 
   async function download(file) {
