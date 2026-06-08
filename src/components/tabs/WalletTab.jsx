@@ -390,10 +390,10 @@ export default function WalletModal({ onClose }) {
             gap: "8px",
           }}
         >
-          <span style={{ fontSize: "13px", flexShrink: 0 }}>⚠️</span>
+          <span style={{ fontSize: "10px", flexShrink: 0 }}>⚠️</span>
           <p
             style={{
-              fontSize: "9px",
+              fontSize: "11px",
               color: "var(--gold-light)",
               margin: 0,
               lineHeight: 1.6,
@@ -401,7 +401,7 @@ export default function WalletModal({ onClose }) {
           >
             Always verify the full address before sending funds. Blockchain
             transactions are irreversible.{" "}
-            <h3>Contact your solicitor if unsure.</h3>
+            <strong>Contact your solicitor if unsure.</strong>
           </p>
         </div>
 
