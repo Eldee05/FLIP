@@ -1,5 +1,3 @@
-// SVG icon library — no React import needed with modern JSX transform
-
 // eslint-disable-next-line react-refresh/only-export-components -- Icon is a local helper only, Icons object is the sole export consumers use
 function Icon({ children, size = 18, color = "currentColor", style = {} }) {
   return (

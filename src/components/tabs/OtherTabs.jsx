@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import { useStore } from "../../store/useStore";
+import { supabase } from "../../lib/supabase";
 import {
   Card,
   CardHeader,
@@ -511,17 +512,44 @@ export function AnalyticsTab() {
   );
 }
 
-// ── Profile ───────────────────────────────────────────────────
+// ── Profile ────────────────────────────────────────
 export function ProfileTab() {
-  const { currentUser } = useStore();
+  const { currentUser, updateProfile } = useStore();
+  const fileInputRef = useRef(null);
   const name = currentUser?.name || "Jane Victim";
   const vin = currentUser?.vin || "victim@example.com";
+  const [editing, setEditing] = useState(false);
+  const [editingName, setEditingName] = useState(name);
+  console.log("CURRENT USER:", currentUser);
   const initials = name
     .split(" ")
     .map((w) => w[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  async function uploadAvatar(file) {
+    try {
+      const fileName = `${Date.now()}-${file.name}`;
+
+      const { error } = await supabase.storage
+        .from("profile-photos")
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      const { data } = supabase.storage
+        .from("profile-photos")
+        .getPublicUrl(fileName);
+
+      updateProfile({
+        avatarUrl: data.publicUrl,
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Failed to upload image");
+    }
+  }
   return (
     <div style={{ animation: "fadeUp 0.35s var(--ease) both" }}>
       <div style={{ marginBottom: "24px" }}>
@@ -557,30 +585,91 @@ export function ProfileTab() {
           >
             <div style={{ textAlign: "center" }}>
               <div
+                onClick={() => fileInputRef.current?.click()}
                 style={{
                   width: "80px",
                   height: "80px",
                   borderRadius: "50%",
+                  overflow: "hidden",
+                  cursor: "pointer",
+                  margin: "0 auto 12px",
                   background:
                     "linear-gradient(135deg,var(--gold),var(--gold-dark))",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "28px",
-                  fontWeight: 700,
-                  color: "var(--bg-primary)",
-                  margin: "0 auto 12px",
                 }}
               >
-                {initials}
+                {currentUser?.avatarUrl ? (
+                  <img
+                    src={currentUser.avatarUrl}
+                    alt="avatar"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  initials
+                )}
               </div>
+
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) uploadAvatar(file);
+                }}
+              />
               <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>
                 Case Victim
               </p>
             </div>
+
             <div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "16px",
+                  padding: "10px 0",
+                  borderBottom: "1px solid var(--border)",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "var(--text-muted)",
+                    fontWeight: 600,
+                    width: "120px",
+                    flexShrink: 0,
+                  }}
+                >
+                  Full Name
+                </span>
+
+                {editing ? (
+                  <input
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: "8px",
+                      borderRadius: "6px",
+                      border: "1px solid var(--border)",
+                    }}
+                  />
+                ) : (
+                  <span style={{ fontSize: "13px", fontWeight: 500 }}>
+                    {name}
+                  </span>
+                )}
+              </div>
+
               {[
-                { label: "Full Name", value: name },
                 { label: "Email / VIN", value: vin },
                 { label: "Active Cases", value: "2" },
                 { label: "Closed Cases", value: "1" },
@@ -612,8 +701,22 @@ export function ProfileTab() {
                 </div>
               ))}
               <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
-                <Button variant="gold" size="sm">
-                  Update Profile
+                <Button
+                  variant="gold"
+                  size="sm"
+                  onClick={() => {
+                    if (editing) {
+                      updateProfile({
+                        name: editingName,
+                      });
+
+                      setEditing(false);
+                    } else {
+                      setEditing(true);
+                    }
+                  }}
+                >
+                  {editing ? "Save Profile" : "Update Profile"}
                 </Button>
                 <Button variant="outline" size="sm">
                   Change PIN
@@ -627,7 +730,7 @@ export function ProfileTab() {
   );
 }
 
-// ── Resources ─────────────────────────────────────────────────
+// ── Resources ────────────────────────────────────────
 export function ResourcesTab() {
   const RESOURCES = [
     {

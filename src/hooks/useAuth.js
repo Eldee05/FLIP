@@ -67,8 +67,13 @@ export function useAuth() {
 
   // ── Complete MFA → enter dashboard (no toast — Change 4) ─────
   function completeMFA(userData) {
-    login(userData.token, { name: userData.name, vin: userData.vin });
-    // No greeting toast — Change 4: remove all alert popups
+    const savedUser = JSON.parse(localStorage.getItem("fiip_user") || "{}");
+
+    login(userData.token, {
+      name: savedUser.name || userData.name,
+      vin: userData.vin,
+      avatar: savedUser.avatar || "",
+    });
   }
 
   // ── Logout (no toast — Change 4) ─────────────────────────────

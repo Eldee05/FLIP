@@ -8,15 +8,49 @@ const makeToast = (message, type = "info") => ({
 });
 
 export const useStore = create((set, get) => ({
-  // ── Auth ─────────────────────────────────────────────────────
+  // ── Auth Token───────
+
   authToken: null,
   currentUser: null,
   isLoggedIn: false,
+
   login: (token, user) =>
-    set({ authToken: token, currentUser: user, isLoggedIn: true }),
+    set({
+      authToken: token,
+      currentUser: {
+        ...user,
+        name: localStorage.getItem("profileName") || user.name,
+        avatarUrl: localStorage.getItem("profilePhoto") || user.avatarUrl,
+      },
+      isLoggedIn: true,
+    }),
+
   logout: () => set({ authToken: null, currentUser: null, isLoggedIn: false }),
 
-  // ── UI ───────────────────────────────────────────────────────
+  updateProfile: (updates) =>
+    set((state) => {
+      const updatedUser = {
+        ...state.currentUser,
+        ...updates,
+      };
+
+      if (updates.name) {
+        localStorage.setItem("profileName", updates.name);
+      }
+
+      if (updates.avatarUrl) {
+        localStorage.setItem("profilePhoto", updates.avatarUrl);
+      }
+
+      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+
+      return {
+        currentUser: updatedUser,
+      };
+    }),
+
+  // ── UI ──
+
   theme:
     typeof window !== "undefined"
       ? localStorage.getItem("fiip_theme") || "dark"
@@ -33,10 +67,12 @@ export const useStore = create((set, get) => ({
     localStorage.setItem("fiip_theme", theme);
     set({ theme });
   },
+
   toggleTheme: () => {
     const next = get().theme === "dark" ? "light" : "dark";
     get().setTheme(next);
   },
+
   setFontSize: (size) => {
     const clamped = Math.max(12, Math.min(22, size));
     const root = document.documentElement;
@@ -44,26 +80,31 @@ export const useStore = create((set, get) => ({
     localStorage.setItem("fiip_fontSize", clamped);
     set({ fontSize: clamped });
   },
+
   setActiveTab: (tab) => set({ activeTab: tab }),
   setBackendStatus: (s) => set({ backendStatus: s }),
 
   // ── Toasts ───────────────────────────────────────────────────
   toasts: [],
+
   addToast: (message, type = "info") => {
     const toast = makeToast(message, type);
     set((s) => ({ toasts: [...s.toasts, toast] }));
     setTimeout(() => get().removeToast(toast.id), 3200);
   },
+
   removeToast: (id) =>
     set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 
   // ── MFA ──────────────────────────────────────────────────────
+
   mfaVisible: false,
   mfaPending: null,
   showMFA: (userData) => set({ mfaVisible: true, mfaPending: userData }),
   hideMFA: () => set({ mfaVisible: false, mfaPending: null }),
 
   // ── Chat ─────────────────────────────────────────────────────
+
   chatOpen: false,
   chatMessages: [
     {
@@ -72,6 +113,7 @@ export const useStore = create((set, get) => ({
       text: "👋 Hello! I'm your victim support assistant. How can I help?",
     },
   ],
+
   toggleChat: () => set((s) => ({ chatOpen: !s.chatOpen })),
   addChatMessage: (text, role) =>
     set((s) => ({
