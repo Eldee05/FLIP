@@ -6,6 +6,7 @@ const SOLICITORS = [
     id: 1,
     name: "Sarah Thornton",
     firm: "Thornton & Associates",
+    location: "London",
     speciality: "Criminal Law",
     phone: "020 7946 0301",
     email: "sarah.thornton@thorntonlaw.co.uk",
@@ -19,6 +20,7 @@ const SOLICITORS = [
     id: 2,
     name: "James Okafor",
     firm: "Okafor Legal Group",
+    location: "Manchester",
     speciality: "Victim Advocacy",
     phone: "020 7946 0418",
     email: "j.okafor@okaforlaw.co.uk",
@@ -32,6 +34,7 @@ const SOLICITORS = [
     id: 3,
     name: "Priya Mehta",
     firm: "Crown Court Chambers",
+    location: "Minnesota, USA",
     speciality: "Family & Abuse Law",
     phone: "020 7946 0509",
     email: "p.mehta@crownchambers.co.uk",
@@ -45,6 +48,7 @@ const SOLICITORS = [
     id: 4,
     name: "David Whitmore",
     firm: "Whitmore & Partners",
+    location: "Austin, USA ",
     speciality: "Personal Injury",
     phone: "020 7946 0622",
     email: "d.whitmore@wmplaw.co.uk",
@@ -70,16 +74,17 @@ function Stars({ rating }) {
 
 export default function SolicitorsTab() {
   const [contacted, setContacted] = useState([]);
+  const [selectedSolicitor, setSelectedSolicitor] = useState(null);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [showCallModal, setShowCallModal] = useState(false);
 
   function contact(sol) {
-    if (contacted.includes(sol.id)) return;
-    setContacted((p) => [...p, sol.id]);
-    // Open mailto in a new tab — avoids mutating window.location directly
-    const link = document.createElement("a");
-    link.href = `mailto:${sol.email}?subject=Case Enquiry via FIIP Portal`;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.click();
+    setSelectedSolicitor(sol);
+    setShowContactModal(true);
+
+    if (!contacted.includes(sol.id)) {
+      setContacted((p) => [...p, sol.id]);
+    }
   }
 
   return (
@@ -282,9 +287,10 @@ export default function SolicitorsTab() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    (window.location.href = `tel:${sol.phone.replace(/\s/g, "")}`)
-                  }
+                  onClick={() => {
+                    setSelectedSolicitor(sol);
+                    setShowCallModal(true);
+                  }}
                 >
                   Call
                 </Button>
@@ -293,6 +299,71 @@ export default function SolicitorsTab() {
           </Card>
         ))}
       </div>
+      {showContactModal && selectedSolicitor && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <h2>{selectedSolicitor.name}</h2>
+
+            <p>
+              <strong>Firm:</strong> {selectedSolicitor.firm}
+            </p>
+
+            <p>
+              <strong>Location:</strong> {selectedSolicitor.location}
+            </p>
+
+            <p>
+              <strong>Speciality:</strong> {selectedSolicitor.speciality}
+            </p>
+
+            <p>
+              <strong>Email:</strong> {selectedSolicitor.email}
+            </p>
+
+            <Button
+              variant="gold"
+              onClick={() => {
+                window.location.href = `mailto:${selectedSolicitor.email}`;
+              }}
+            >
+              Send Email
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => setShowContactModal(false)}
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {showCallModal && selectedSolicitor && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <h2>Call Solicitor</h2>
+
+            <p>
+              <strong>{selectedSolicitor.name}</strong>
+            </p>
+
+            <p
+              style={{
+                fontSize: "22px",
+                fontWeight: "700",
+                marginTop: "12px",
+              }}
+            >
+              {selectedSolicitor.phone}
+            </p>
+
+            <Button variant="outline" onClick={() => setShowCallModal(false)}>
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
