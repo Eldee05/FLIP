@@ -11,24 +11,28 @@ import ReadingProgress from "./components/shared/ReadingProgress.jsx";
 import A11yToolbar from "./components/shared/A11yToolbar.jsx";
 
 export default function App() {
-  const { isLoggedIn, mfaVisible, theme } = useStore(); // removed this fro now "checkBackend"
+  const { isLoggedIn, mfaVisible, checkBackend } = useStore(); // removed this fro now "checkBackend"
   const [view, setView] = React.useState("login"); // 'login' | 'signup'
 
   useKeyboard();
 
+  useEffect(() => {
+    document.documentElement.setAttribute(
+      "data-theme",
+      localStorage.getItem("fiip_theme") || "dark",
+    );
+  }, []);
+
   // Apply saved theme on mount and whenever it changes
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+    checkBackend();
 
-  // Backend health check — silent, no toast
-  {
-    /*useEffect(() => {
-    const interval = setInterval(checkBackend, 30_000);
+    const interval = setInterval(() => {
+      checkBackend();
+    }, 30000);
+
     return () => clearInterval(interval);
-  }, [checkBackend]);*/
-  }
-
+  }, [checkBackend]);
   return (
     <>
       <ReadingProgress />
