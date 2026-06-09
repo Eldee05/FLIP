@@ -121,7 +121,8 @@ export default function SignUpPage({ onGoLogin }) {
     setError(msg);
     setBusy(false);
   };
-  // BEFORE
+  {
+    /* BEFORE
   async function sendOtp(e) {
     e.preventDefault();
     setError("");
@@ -137,18 +138,19 @@ export default function SignUpPage({ onGoLogin }) {
         signal: AbortSignal.timeout(5000),
       });
     } catch {
-      /* demo: always proceed */
+      /* demo: always proceed 
       // ← THIS is why OTP is never required
     }
     // Demo: always move forward
     setStep(1);
     setBusy(false);
     setTimeout(() => otpRefs.current[0]?.focus(), 100);
+  }*/
   }
 
   // ── Step 0: Send OTP ───────────────────────────────────────
-  {
-    /*async function sendOtp(e) {
+
+  async function sendOtp(e) {
     e.preventDefault();
     setError("");
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -175,7 +177,6 @@ export default function SignUpPage({ onGoLogin }) {
     } finally {
       setBusy(false);
     }
-  */
   }
 
   // ── Step 1: Verify OTP ─────────────────────────────────────
@@ -191,7 +192,8 @@ export default function SignUpPage({ onGoLogin }) {
     }
   }
 
-  // BEFORE
+  {
+    /* BEFORE
   function verifyOtp(e) {
     e.preventDefault();
     setError("");
@@ -199,11 +201,12 @@ export default function SignUpPage({ onGoLogin }) {
     if (code.length < 6) return err("Please enter all 6 digits.");
     // Demo: any 6-digit code passes   // ← never actually verifies
     setStep(2);
+  */
   }
 
   // After successful OTP verification, we would normally call handleRegistration to create the account. keep this in mind when implementing the backend API.
-  {
-    /*async function verifyOtp(e) {
+
+  async function verifyOtp(e) {
     e.preventDefault();
     setError("");
     const code = otp.join("");
@@ -225,7 +228,6 @@ export default function SignUpPage({ onGoLogin }) {
     } finally {
       setBusy(false);
     }
-  }*/
   }
   function resendOtp() {
     setOtp(["", "", "", "", "", ""]);

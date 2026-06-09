@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useStore } from "../../store/useStore";
 import { useAuth } from "../../hooks/useAuth";
 import { Button, Alert } from "../shared/UI";
-//const API_URL = "http://localhost:8000/api/v1";
+const API_URL = "http://localhost:8000/api/v1";
 
 export default function MFAModal() {
   const { hideMFA, mfaPending } = useStore();
@@ -27,7 +27,7 @@ export default function MFAModal() {
     if (e.key === "Backspace" && !digits[i] && i > 0)
       refs.current[i - 1]?.focus();
   }
-  // BEFORE
+  /*BEFORE
   function verify() {
     const code = digits.join("");
     if (code.length < 6) {
@@ -36,10 +36,9 @@ export default function MFAModal() {
     }
     completeMFA(mfaPending); // ← no actual code check
     hideMFA();
-  }
+  }*/
 
-  {
-    /*AFTER async function verify() {
+  async function verify() {
     const code = digits.join("");
     if (code.length < 6) {
       setError("Please enter all 6 digits.");
@@ -61,9 +60,7 @@ export default function MFAModal() {
     } catch {
       setError("Could not reach the server.");
     }
-  }]*/
   }
-
   function cancel() {
     hideMFA();
   }
