@@ -200,7 +200,7 @@ export default function MFAModal() {
           Cancel
         </Button>
 
-        <p
+        {/*<p
           style={{
             marginTop: "14px",
             fontSize: "11px",
@@ -208,7 +208,7 @@ export default function MFAModal() {
           }}
         >
           Demo: enter any 6 digits
-        </p>
+        </p>*/}
       </div>
     </div>
   );
