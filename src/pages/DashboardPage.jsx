@@ -5,7 +5,7 @@ import Topbar from "../components/layout/Topbar.jsx";
 import Sidebar from "../components/layout/Sidebar.jsx";
 import ChatWidget from "../components/shared/ChatWidget.jsx";
 
-import OverviewTab from "../components/tabs/OverviewTab.jsx";
+import OverviewTab from "../components/tabs/OverViewTab.jsx";
 import {
   CasesTab,
   HearingsTab,
