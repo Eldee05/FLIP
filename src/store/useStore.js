@@ -139,7 +139,7 @@ export const useStore = create((set, get) => ({
   checkBackend: async () => {
     set({ backendStatus: "checking" });
     try {
-      const res = await fetch("http://localhost:8000/api", {
+      const res = await fetch("http://localhost:8000/api/v1", {
         signal: AbortSignal.timeout(3000),
       });
       set({ backendStatus: res.ok ? "online" : "partial" });

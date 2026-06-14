@@ -1,6 +1,6 @@
 import { useStore } from "../store/useStore";
 
-const API_URL = "http://localhost:8000/api";
+const API_URL = "http://localhost:8000/api/v1";
 
 function nameFromVin(vin) {
   if (vin.includes("@")) {

@@ -11,7 +11,7 @@ import {
 } from "../components/shared/UI";
 import { Icons } from "../components/shared/Icons";
 
-const API_URL = "http://localhost:8000/api";
+const API_URL = "http://localhost:8000/api/v1";
 
 const STEPS = ["Email", "Verify", "Details", "Complete"];
 
