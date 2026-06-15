@@ -12,7 +12,7 @@ import {
   Alert,
 } from "../shared/UI";
 
-const API_URL = "http://localhost:8000/api/v1";
+const API_URL = "https://eleven-varmint-boogeyman.ngrok-free.dev/api/v1";
 
 const THREADS = [
   {

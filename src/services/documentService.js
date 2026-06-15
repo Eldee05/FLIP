@@ -1,6 +1,6 @@
 import { useStore } from '../store/useStore';
 
-const API_URL = "http://localhost:8000";
+const API_URL = "https://eleven-varmint-boogeyman.ngrok-free.dev";
 
 // Helper to get auth token
 const getToken = () => localStorage.getItem('token');
