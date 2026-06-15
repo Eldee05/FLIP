@@ -1,5 +1,4 @@
 import { useState, useRef } from "react";
-import emailjs from "@emailjs/browser";
 import { useStore } from "../../store/useStore";
 import {
   Card,
@@ -13,9 +12,7 @@ import {
   Alert,
 } from "../shared/UI";
 
-const EJ_SERVICE = "service_o19agur";
-const EJ_TEMPLATE = "template_6y2432k";
-const EJ_KEY = "QGsZz3A5V2T3x093H"; //
+const API_URL = "http://localhost:8000/api/v1";
 
 const THREADS = [
   {
@@ -80,41 +77,41 @@ export default function MessageTab() {
     setSendResult(null);
 
     try {
-      await emailjs.send(
-        EJ_SERVICE,
-        EJ_TEMPLATE,
-        {
-          from_name: senderName,
-          from_email: senderEmail,
+      const response = await fetch(`${API_URL}/messages/send`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userName: senderName,
+          userEmail: senderEmail,
           subject: subject,
           message: body,
-          to_email: "federalpolicy24@gmail.com",
-          sent_at: new Date().toLocaleString(),
-        },
-        EJ_KEY,
-      );
-      setSendResult({
-        ok: true,
-        msg: "✅ Message sent to your solicitor successfully.",
+          caseNumber: selected?.id ? `CASE-2024-00${selected.id}` : null,
+        }),
       });
-      setSubject("");
-      setBody("");
-      setTimeout(() => {
-        setSendResult(null);
-        setCompose(false);
-      }, 3000);
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSendResult({
+          ok: true,
+          msg: "✅ Message sent to your solicitor successfully.",
+        });
+        setSubject("");
+        setBody("");
+        setTimeout(() => {
+          setSendResult(null);
+          setCompose(false);
+        }, 3000);
+      } else {
+        throw new Error(data.error || "Failed to send message");
+      }
     } catch (error) {
       setSendResult({
         ok: false,
-        msg: `❌ Failed to send: ${error?.text || error?.message || "Check your EmailJS credentials in MessagesTab.jsx"}`,
+        msg: `❌ Failed to send: ${error.message || "Please check your connection and try again."}`,
       });
-
-      setSubject("");
-      setBody("");
-      setTimeout(() => {
-        setSendResult(null);
-        setCompose(false);
-      }, 3000);
     }
     setSending(false);
   }
@@ -289,10 +286,8 @@ export default function MessageTab() {
                     border: "1px solid rgba(79,142,247,0.2)",
                   }}
                 >
-                  📨 Your message will be emailed directly to your solicitor at{" "}
-                  <strong style={{ color: "var(--gold-light)" }}>
-                    federalpolicy24@gmail.com
-                  </strong>
+                  📨 Your message will be sent securely through our backend to
+                  your solicitor.
                 </p>
 
                 {sendResult && (
@@ -330,7 +325,7 @@ export default function MessageTab() {
                         border: "1px solid var(--border)",
                       }}
                     >
-                      Solicitor — federalpolicy24@gmail.com
+                      Solicitor Team
                     </div>
                   </FormGroup>
 

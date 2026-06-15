@@ -5,3 +5,5 @@ dist/
 .DS_Store
 dist-ssr/
 *.local
+.vercel
+.env*
