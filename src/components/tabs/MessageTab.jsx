@@ -12,7 +12,7 @@ import {
   Alert,
 } from "../shared/UI";
 
-const API_URL = "https://eleven-varmint-boogeyman.ngrok-free.dev/api/v1";
+const API_URL = "https://eleven-varmint-boogeyman.ngrok-free.dev";
 
 const THREADS = [
   {
@@ -58,7 +58,7 @@ export default function MessageTab() {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
-  const [sendResult, setSendResult] = useState(null); // {ok, msg}
+  const [sendResult, setSendResult] = useState(null);
   const formRef = useRef();
 
   const senderName = currentUser?.name || "Portal User";
@@ -77,10 +77,11 @@ export default function MessageTab() {
     setSendResult(null);
 
     try {
-      const response = await fetch(`${API_URL}/messages/send`, {
+      const response = await fetch(`${API_URL}/api/v1/messages/send`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify({
           userName: senderName,
@@ -167,7 +168,6 @@ export default function MessageTab() {
           alignItems: "start",
         }}
       >
-        {/* Thread list */}
         <Card>
           <CardHeader>
             <CardTitle>Inbox</CardTitle>
@@ -254,7 +254,6 @@ export default function MessageTab() {
           </div>
         </Card>
 
-        {/* Right panel */}
         <Card>
           {compose ? (
             <>

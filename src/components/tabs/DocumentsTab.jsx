@@ -91,13 +91,13 @@ export default function DocumentsTab() {
 
         console.log("SUPABASE FILES:", files);
 
-        const mappedFiles = files.map((file) => ({
+        const mappedFiles = Array.isArray(files) ? files.map((file) => ({
           id: file.id || file.name,
           name: file.name.replace(/^\d+-/, ""),
           size: file.metadata?.size || 0,
           type: "other",
-          fileName: file.name,
-          uploaded: new Date(file.created_at).toLocaleDateString(),
+          fileName: file.fileName,
+          uploaded: new Date(file.uploadedAt).toLocaleDateString(),
         }));
 
         console.log("FILES TO STORE:", mappedFiles);
