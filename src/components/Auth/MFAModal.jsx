@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useStore } from "../../store/useStore";
 import { useAuth } from "../../hooks/useAuth";
 import { Button, Alert } from "../shared/UI";
-//const API_URL = "https://eleven-varmint-boogeyman.ngrok-free.dev/api/v1";
+//const API_URL = "https://flip-backend.vercel.app/api/v1";
 
 export default function MFAModal() {
   const { hideMFA, mfaPending } = useStore();

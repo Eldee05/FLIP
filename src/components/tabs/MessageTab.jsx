@@ -12,7 +12,7 @@ import {
   Alert,
 } from "../shared/UI";
 
-const API_URL = "https://eleven-varmint-boogeyman.ngrok-free.dev";
+const API_URL = "https://flip-backend.vercel.app";
 
 const THREADS = [
   {

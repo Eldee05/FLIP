@@ -45,12 +45,12 @@ const EXISTING_DOCS = [
 const TYPE_ICONS = { pdf: "📄", image: "🖼️", doc: "📝", other: "🗃️" };
 
 const MAX_SIZES = {
-  pdf: 25 * 1024 * 1024,
-  image: 10 * 1024 * 1024,
-  doc: 15 * 1024 * 1024,
-  audio: 50 * 1024 * 1024,
-  video: 100 * 1024 * 1024,
-  other: 10 * 1024 * 1024,
+  pdf: 1000 * 1024 * 1024,
+  image: 1000 * 1024 * 1024,
+  doc: 1000 * 1024 * 1024,
+  audio: 1000 * 1024 * 1024,
+  video: 1000 * 1024 * 1024,
+  other: 1000 * 1024 * 1024,
 };
 
 function fileType(file) {

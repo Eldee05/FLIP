@@ -1,72 +1,86 @@
-const API_URL = "https://eleven-varmint-boogeyman.ngrok-free.dev";
+import { supabase } from "../lib/supabase";
 
-const getToken = () => localStorage.getItem('token');
-
-const fetchOptions = (method, body) => {
-    const opts = {
-        method,
-        headers: {
-            'ngrok-skip-browser-warning': 'true',
-        }
-    };
-    if (body && !(body instanceof FormData)) {
-        opts.headers['Content-Type'] = 'application/json';
-        opts.body = JSON.stringify(body);
-    } else if (body instanceof FormData) {
-        opts.body = body;
-    }
-    return opts;
-};
+const API_URL = "https://flip-backend.vercel.app";
 
 export const uploadDocument = async (file) => {
+  try {
+    const fileName = `${Date.now()}-${file.name}`;
+    const { data, error } = await supabase.storage
+      .from('documents')
+      .upload(fileName, file, {
+        contentType: file.type,
+        upsert: false
+      });
+
+    if (error) throw error;
+
+    const { data: urlData } = supabase.storage.from('documents').getPublicUrl(fileName);
+
+    return {
+      originalName: file.name,
+      size: file.size,
+      fileName: fileName,
+      url: urlData.publicUrl
+    };
+  } catch (supabaseError) {
+    console.error('Supabase upload failed, trying backend:', supabaseError);
     const formData = new FormData();
     formData.append('document', file);
-
-    const response = await fetch(`${API_URL}/api/v1/documents/upload`, fetchOptions('POST', formData));
-
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Upload failed');
-    }
-
+    const response = await fetch(`${API_URL}/api/v1/documents/upload`, {
+      method: 'POST',
+      headers: { 'ngrok-skip-browser-warning': 'true' },
+      body: formData
+    });
+    if (!response.ok) throw new Error('Upload failed');
     const data = await response.json();
     return {
-        originalName: data.data.originalName || file.name,
-        size: data.data.size || file.size,
-        fileName: data.data.filename || file.name,
+      originalName: data.data.originalName || file.name,
+      size: data.data.size || file.size,
+      fileName: data.data.filename || file.name,
     };
+  }
 };
 
 export const listDocuments = async () => {
-    const response = await fetch(`${API_URL}/api/v1/documents`, fetchOptions('GET'));
-
-    if (!response.ok) {
-        console.error('Failed to fetch documents');
-        return [];
-    }
-
-    const data = await response.json();
-    return (data.documents || []).map(doc => ({
-        id: doc.filename,
-        name: doc.filename.replace(/^\d+-/, ''),
-        size: doc.size || 0,
-        fileName: doc.filename,
-        uploaded: doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Unknown',
-        type: doc.filename.match(/\.(jpg|jpeg|png|gif|webp|bmp)$/i) ? 'image' :
-              doc.filename.match(/\.pdf$/i) ? 'pdf' :
-              doc.filename.match(/\.(doc|docx)$/i) ? 'doc' : 'other',
+  try {
+    const { data, error } = await supabase.storage.from('documents').list();
+    if (error) throw error;
+    return (data || []).map(doc => ({
+      id: doc.id || doc.name,
+      name: doc.name.replace(/^\d+-/, ''),
+      size: doc.metadata?.size || 0,
+      fileName: doc.name,
+      uploaded: new Date(doc.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      type: doc.name.match(/\.(jpg|jpeg|png|gif|webp|bmp)$/i) ? 'image' :
+            doc.name.match(/\.pdf$/i) ? 'pdf' :
+            doc.name.match(/\.(doc|docx)$/i) ? 'doc' : 'other',
     }));
+  } catch {
+    const response = await fetch(`${API_URL}/api/v1/documents`, {
+      headers: { 'ngrok-skip-browser-warning': 'true' }
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.documents || [];
+  }
 };
 
 export const deleteDocument = async (fileName) => {
-    const response = await fetch(`${API_URL}/api/v1/documents/${fileName}`, fetchOptions('DELETE'));
-
-    if (!response.ok) {
-        throw new Error('Delete failed');
-    }
+  try {
+    const { error } = await supabase.storage.from('documents').remove([fileName]);
+    if (error) throw error;
     return true;
+  } catch {
+    const response = await fetch(`${API_URL}/api/v1/documents/${fileName}`, {
+      method: 'DELETE',
+      headers: { 'ngrok-skip-browser-warning': 'true' }
+    });
+    if (!response.ok) throw new Error('Delete failed');
+    return true;
+  }
 };
 
 export const getDownloadUrl = async (fileName) => {
-    return `${API_URL}/api/v1/documents/${fileName}/download`;
+  const { data } = supabase.storage.from('documents').getPublicUrl(fileName);
+  return data.publicUrl;
 };

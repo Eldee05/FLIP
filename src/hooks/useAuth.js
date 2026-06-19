@@ -1,6 +1,6 @@
 import { useStore } from "../store/useStore";
 
-const API_URL = "https://eleven-varmint-boogeyman.ngrok-free.dev/api/v1";
+const API_URL = "https://flip-backend.vercel.app/api/v1";
 
 function nameFromVin(vin) {
   if (vin.includes("@")) {

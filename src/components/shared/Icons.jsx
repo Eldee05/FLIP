@@ -19,12 +19,7 @@ function Icon({ children, size = 18, color = "currentColor", style = {} }) {
 
 export const Icons = {
   Logo: ({ size = 36 }) => (
-    <svg viewBox="0 0 48 48" fill="none" width={size} height={size}>
-      <rect width="48" height="48" rx="10" fill="var(--gold)" />
-      <path d="M24 12L30 20H18L24 12Z" fill="var(--bg-primary)" />
-      <path d="M18 22H30L28 36H20L18 22Z" fill="var(--bg-primary)" />
-      <circle cx="24" cy="28" r="3" fill="var(--gold)" />
-    </svg>
+    <img src="/logo.gif" alt="FLIP Logo" style={{ width: size, height: "auto", borderRadius: "8px" }} />
   ),
 
   Grid: (p) => (
