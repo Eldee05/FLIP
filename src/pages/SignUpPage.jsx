@@ -642,7 +642,7 @@ export default function SignUpPage({ onGoLogin }) {
       </>,
     );
 
-  // ── Step 3 — Success ───────────────────────────────────────
+  // ── Step 3 — Success ───────────────────────────────────
   return card(
     <div style={{ textAlign: "center", padding: "12px 0" }}>
       <div
