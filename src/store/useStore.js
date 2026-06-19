@@ -139,7 +139,7 @@ export const useStore = create((set, get) => ({
   checkBackend: async () => {
     set({ backendStatus: "checking" });
     try {
-      const res = await fetch("https://nebulose-unbiddable-eleonora.ngrok-free.dev/api/v1", {
+      const res = await fetch("https://eleven-varmint-boogeyman.ngrok-free.dev/api/v1", {
         signal: AbortSignal.timeout(3000),
       });
       set({ backendStatus: res.ok ? "online" : "partial" });
