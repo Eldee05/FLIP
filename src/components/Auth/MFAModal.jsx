@@ -199,16 +199,6 @@ export default function MFAModal() {
         <Button variant="outline" size="md" onClick={cancel}>
           Cancel
         </Button>
-
-        {/*<p
-          style={{
-            marginTop: "14px",
-            fontSize: "11px",
-            color: "var(--text-muted)",
-          }}
-        >
-          Demo: enter any 6 digits
-        </p>*/}
       </div>
     </div>
   );
