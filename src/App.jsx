@@ -5,10 +5,10 @@ import { useKeyboard } from "./hooks/useKeyboard";
 import SignUpPage from "./pages/SignUpPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import DashboardPage from "./pages/DashboardPage.jsx";
-import MFAModal from "./components/auth/MFAModal.jsx";
+import MFAModal from "./components/Auth/MFAModal.jsx";
 import ToastContainer from "./components/shared/ToastContainer.jsx";
 import ReadingProgress from "./components/shared/ReadingProgress.jsx";
-import A11yToolbar from "./components/shared/A11yToolbar.jsx";
+import A11yToolbar from "./components/shared/A11ytoolbar.jsx";
 
 export default function App() {
   const { isLoggedIn, mfaVisible, checkBackend } = useStore(); // removed this fro now "checkBackend"
