@@ -17,7 +17,6 @@ import {
   getDownloadUrl,
   listDocuments,
 } from "../../services/documentService";
-//import { Icons } from "../shared/Icons";
 
 const EXISTING_DOCS = [
   {
@@ -46,12 +45,12 @@ const EXISTING_DOCS = [
 const TYPE_ICONS = { pdf: "📄", image: "🖼️", doc: "📝", other: "🗃️" };
 
 const MAX_SIZES = {
-  pdf: 25 * 1024 * 1024,
-  image: 10 * 1024 * 1024,
-  doc: 15 * 1024 * 1024,
-  audio: 50 * 1024 * 1024,
-  video: 100 * 1024 * 1024,
-  other: 10 * 1024 * 1024,
+  pdf: 1000 * 1024 * 1024,
+  image: 1000 * 1024 * 1024,
+  doc: 1000 * 1024 * 1024,
+  audio: 1000 * 1024 * 1024,
+  video: 1000 * 1024 * 1024,
+  other: 1000 * 1024 * 1024,
 };
 
 function fileType(file) {
@@ -79,7 +78,6 @@ export default function DocumentsTab() {
     removeUploadedFile,
     setUploadedFiles,
   } = useStore();
-  console.log("RENDER FILES:", uploadedFiles);
   const [dragging, setDragging] = useState(false);
   const [previewing, setPreviewing] = useState(null);
   const inputRef = useRef();
@@ -88,26 +86,11 @@ export default function DocumentsTab() {
     async function loadFiles() {
       try {
         const files = await listDocuments();
-
-        console.log("SUPABASE FILES:", files);
-
-        const mappedFiles = files.map((file) => ({
-          id: file.id || file.name,
-          name: file.name.replace(/^\d+-/, ""),
-          size: file.metadata?.size || 0,
-          type: "other",
-          fileName: file.name,
-          uploaded: new Date(file.created_at).toLocaleDateString(),
-        }));
-
-        console.log("FILES TO STORE:", mappedFiles);
-
-        setUploadedFiles(mappedFiles);
+        setUploadedFiles(files);
       } catch (err) {
         console.error("Failed to load documents", err);
       }
     }
-
     loadFiles();
   }, []);
 
@@ -115,31 +98,19 @@ export default function DocumentsTab() {
     for (const f of Array.from(fileList)) {
       try {
         const type = fileType(f);
-
         const maxSize = MAX_SIZES[type] || MAX_SIZES.other;
-
         if (f.size > maxSize) {
-          alert(
-            `${f.name} exceeds the maximum size of ${formatSize(maxSize)}.`,
-          );
+          alert(`${f.name} exceeds the maximum size of ${formatSize(maxSize)}.`);
           continue;
         }
-
         const uploaded = await uploadDocument(f);
-
         addUploadedFile({
           id: Date.now() + Math.random(),
-
           name: uploaded.originalName,
-
           size: uploaded.size,
-
           type,
-
           mimeType: f.type,
-
           fileName: uploaded.fileName,
-
           uploaded: new Date().toLocaleDateString("en-GB", {
             day: "2-digit",
             month: "short",
@@ -148,10 +119,7 @@ export default function DocumentsTab() {
         });
       } catch (err) {
         console.error("UPLOAD ERROR:", err);
-
-        alert(
-          err?.message || JSON.stringify(err) || `Failed to upload ${f.name}`,
-        );
+        alert(err?.message || `Failed to upload ${f.name}`);
       }
     }
   }
@@ -170,7 +138,6 @@ export default function DocumentsTab() {
   async function download(file) {
     try {
       const url = await getDownloadUrl(file.fileName);
-
       const a = document.createElement("a");
       a.href = url;
       a.download = file.name;
@@ -184,28 +151,14 @@ export default function DocumentsTab() {
   return (
     <div style={{ animation: "fadeUp 0.35s var(--ease) both" }}>
       <div style={{ marginBottom: "24px" }}>
-        <div
-          style={{
-            fontSize: "12px",
-            color: "var(--text-muted)",
-            marginBottom: "4px",
-          }}
-        >
-          Dashboard /{" "}
-          <span style={{ color: "var(--gold-light)" }}>Documents</span>
+        <div style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>
+          Dashboard / <span style={{ color: "var(--gold-light)" }}>Documents</span>
         </div>
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "26px",
-            fontWeight: 600,
-          }}
-        >
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "26px", fontWeight: 600 }}>
           Case Documents
         </h1>
       </div>
 
-      {/* ── Upload Drop Zone ─────────────────────────────────── */}
       <Card style={{ marginBottom: "20px" }}>
         <CardHeader>
           <CardTitle>Upload Files</CardTitle>
@@ -213,10 +166,7 @@ export default function DocumentsTab() {
         <CardBody>
           <div
             onClick={() => inputRef.current.click()}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragging(true);
-            }}
+            onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}
             onDrop={onDrop}
             style={{
@@ -225,16 +175,12 @@ export default function DocumentsTab() {
               padding: "40px 20px",
               textAlign: "center",
               cursor: "pointer",
-              background: dragging
-                ? "rgba(201,168,76,0.05)"
-                : "rgba(128,128,128,0.03)",
+              background: dragging ? "rgba(201,168,76,0.05)" : "rgba(128,128,128,0.03)",
               transition: "var(--transition)",
             }}
           >
             <div style={{ fontSize: "36px", marginBottom: "10px" }}>📂</div>
-            <p
-              style={{ fontWeight: 600, fontSize: "14px", marginBottom: "4px" }}
-            >
+            <p style={{ fontWeight: 600, fontSize: "14px", marginBottom: "4px" }}>
               {dragging ? "Drop files here" : "Click to upload or drag & drop"}
             </p>
             <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>
@@ -250,86 +196,17 @@ export default function DocumentsTab() {
             />
           </div>
 
-          {/* Upload progress / file list */}
           {uploadedFiles?.length > 0 && (
-            <div
-              style={{
-                marginTop: "16px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "8px",
-              }}
-            >
-              {uploadedFiles?.map((f) => (
-                <div
-                  key={f.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                    padding: "10px 14px",
-                    background: "rgba(128,128,128,0.06)",
-                    borderRadius: "var(--radius)",
-                    border: "1px solid var(--border)",
-                  }}
-                >
-                  <span style={{ fontSize: "20px" }}>{TYPE_ICONS[f.type]}</span>
+            <div style={{ marginTop: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
+              {uploadedFiles.map((f) => (
+                <div key={f.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", background: "rgba(128,128,128,0.06)", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}>
+                  <span style={{ fontSize: "20px" }}>{TYPE_ICONS[f.type] || "📄"}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p
-                      style={{
-                        fontSize: "13px",
-                        fontWeight: 600,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {f.name}
-                    </p>
-                    <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-                      {formatSize(f.size)} · {f.uploaded}
-                    </p>
+                    <p style={{ fontSize: "13px", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</p>
+                    <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>{formatSize(f.size)} · {f.uploaded}</p>
                   </div>
-                  {f.type === "image" && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setPreviewing(f)}
-                    >
-                      Preview
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => download(f)}
-                  >
-                    ⬇ Download
-                  </Button>
-                  <button
-                    onClick={async () => {
-                      try {
-                        await deleteDocument(f.fileName);
-
-                        removeUploadedFile(f.id);
-                      } catch (err) {
-                        console.error(err);
-                        alert("Failed to delete file.");
-                      }
-                    }}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "var(--text-muted)",
-                      cursor: "pointer",
-                      fontSize: "16px",
-                      padding: "4px",
-                      lineHeight: 1,
-                    }}
-                    aria-label="Remove file"
-                  >
-                    ✕
-                  </button>
+                  <Button variant="outline" size="sm" onClick={() => download(f)}>⬇ Download</Button>
+                  <button onClick={async () => { try { await deleteDocument(f.fileName); removeUploadedFile(f.id); } catch (err) { alert("Failed to delete file."); } }} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "16px", padding: "4px", lineHeight: 1 }} aria-label="Remove file">✕</button>
                 </div>
               ))}
             </div>
@@ -337,65 +214,6 @@ export default function DocumentsTab() {
         </CardBody>
       </Card>
 
-      {/* ── Image Preview Modal ───────────────────────────────── */}
-      {previewing && (
-        <div
-          onClick={() => setPreviewing(null)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.85)",
-            zIndex: 400,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              maxWidth: "90vw",
-              maxHeight: "90vh",
-              position: "relative",
-            }}
-          >
-            <img
-              src={previewing.dataUrl}
-              alt={previewing.name}
-              style={{
-                maxWidth: "100%",
-                maxHeight: "85vh",
-                borderRadius: "var(--radius)",
-                display: "block",
-              }}
-            />
-            <button
-              onClick={() => setPreviewing(null)}
-              style={{
-                position: "absolute",
-                top: "-12px",
-                right: "-12px",
-                width: "32px",
-                height: "32px",
-                borderRadius: "50%",
-                background: "var(--red)",
-                border: "none",
-                color: "#fff",
-                fontSize: "14px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Official Case Documents ───────────────────────────── */}
       <Card>
         <CardHeader>
           <CardTitle>Official Case Documents</CardTitle>
@@ -413,51 +231,11 @@ export default function DocumentsTab() {
             </thead>
             <tbody>
               {EXISTING_DOCS.map((doc) => (
-                <tr
-                  key={doc.id}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background =
-                      "rgba(128,128,128,0.03)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = "transparent")
-                  }
-                >
-                  <Td>
-                    <span
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                      }}
-                    >
-                      <span>📄</span>
-                      <span style={{ fontWeight: 500 }}>{doc.name}</span>
-                    </span>
-                  </Td>
-                  <Td>
-                    <span
-                      style={{ fontWeight: 600, color: "var(--gold-light)" }}
-                    >
-                      {doc.case}
-                    </span>
-                  </Td>
+                <tr key={doc.id}>
+                  <Td><span style={{ display: "flex", alignItems: "center", gap: "8px" }}><span>📄</span><span style={{ fontWeight: 500 }}>{doc.name}</span></span></Td>
+                  <Td><span style={{ fontWeight: 600, color: "var(--gold-light)" }}>{doc.case}</span></Td>
                   <Td style={{ color: "var(--text-muted)" }}>{doc.date}</Td>
-                  <Td>
-                    <Button
-                      variant="outline"
-                      size="xs"
-                      onClick={() => {
-                        // In production this would fetch the real file
-                        const a = document.createElement("a");
-                        a.href = "#";
-                        // Simulate download
-                        console.log("Downloading", doc.name);
-                      }}
-                    >
-                      ⬇ Download
-                    </Button>
-                  </Td>
+                  <Td><Button variant="outline" size="xs">⬇ Download</Button></Td>
                 </tr>
               ))}
             </tbody>
