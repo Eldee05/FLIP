@@ -15,7 +15,7 @@ function nameFromVin(vin) {
 export function useAuth() {
   const { login, logout, showMFA } = useStore();
 
-  // ── Login ────────────────────────────────────────────────────
+  // Login - NO 2FA, direct login with token persistence
   async function handleLogin(vin, pin) {
     try {
       const res = await fetch(`${API_URL}/auth/login`, {
@@ -26,18 +26,17 @@ export function useAuth() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        showMFA({
+        // Direct login without MFA
+        login(data.token, {
           name: data.user?.name ?? nameFromVin(vin),
           vin,
-          token: data.token,
         });
         return { ok: true };
       }
       return { ok: false, error: data.error || "Invalid credentials." };
     } catch {
-      // Demo fallback — any email + PIN ≥ 3 chars works
       if (vin && pin.length >= 3) {
-        showMFA({ name: nameFromVin(vin), vin, token: "demo-token" });
+        login("demo-token", { name: nameFromVin(vin), vin });
         return { ok: true };
       }
       return {
@@ -47,7 +46,7 @@ export function useAuth() {
     }
   }
 
-  // ── Registration ─────────────────────────────────────────────
+  // Registration - OTP 2FA only here
   async function handleRegistration(email, password, ssn, idNumber) {
     try {
       const res = await fetch(`${API_URL}/auth/register`, {
@@ -57,26 +56,31 @@ export function useAuth() {
         signal: AbortSignal.timeout(5000),
       });
       const data = await res.json();
-      return res.ok
-        ? { ok: true, message: data.message || "Account created successfully!" }
-        : { ok: false, error: data.error || "Registration failed." };
+      if (res.ok && data.success) {
+        // Show MFA only for registration verification
+        showMFA({
+          name: nameFromVin(email),
+          vin: email,
+          token: data.token || "pending",
+        });
+        return { ok: true, message: "Verification code sent to your email." };
+      }
+      return { ok: false, error: data.error || "Registration failed." };
     } catch {
-      return { ok: true, message: "Account created successfully!" };
+      showMFA({ name: nameFromVin(email), vin: email, token: "pending" });
+      return { ok: true, message: "Verification code sent." };
     }
   }
 
-  // ── Complete MFA → enter dashboard (no toast — Change 4) ─────
+  // Complete MFA (registration verification)
   function completeMFA(userData) {
-    const savedUser = JSON.parse(localStorage.getItem("fiip_user") || "{}");
-
     login(userData.token, {
-      name: savedUser.name || userData.name,
+      name: userData.name,
       vin: userData.vin,
-      avatar: savedUser.avatar || "",
     });
   }
 
-  // ── Logout (no toast — Change 4) ─────────────────────────────
+  // Logout
   function handleLogout() {
     logout();
   }

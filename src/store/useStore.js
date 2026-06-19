@@ -1,150 +1,90 @@
 import { create } from "zustand";
 
-let _toastId = 0;
-const makeToast = (message, type = "info") => ({
-  id: ++_toastId,
-  message,
-  type,
-});
+const SESSION_KEY = "flip_session";
 
-export const useStore = create((set, get) => ({
-  // ── Auth Token───────
-
-  authToken: null,
-  currentUser: null,
-  isLoggedIn: false,
-
-  login: (token, user) =>
-    set({
-      authToken: token,
-      currentUser: {
-        ...user,
-        name: localStorage.getItem("profileName") || user.name,
-        avatarUrl: localStorage.getItem("profilePhoto") || user.avatarUrl,
-      },
-      isLoggedIn: true,
-    }),
-
-  logout: () => set({ authToken: null, currentUser: null, isLoggedIn: false }),
-
-  updateProfile: (updates) =>
-    set((state) => {
-      const updatedUser = {
-        ...state.currentUser,
-        ...updates,
-      };
-
-      if (updates.name) {
-        localStorage.setItem("profileName", updates.name);
+function loadSession() {
+  try {
+    const saved = localStorage.getItem(SESSION_KEY);
+    if (saved) {
+      const session = JSON.parse(saved);
+      // Session valid for 30 days
+      if (session.expiresAt && new Date(session.expiresAt) > new Date()) {
+        return session;
       }
+    }
+  } catch (e) {}
+  return null;
+}
 
-      if (updates.avatarUrl) {
-        localStorage.setItem("profilePhoto", updates.avatarUrl);
-      }
+function saveSession(token, user) {
+  const session = {
+    token,
+    currentUser: user,
+    isLoggedIn: true,
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+  };
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  return session;
+}
 
-      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+function clearSession() {
+  localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem("token");
+  localStorage.removeItem("fiip_user");
+}
 
-      return {
-        currentUser: updatedUser,
-      };
-    }),
+const savedSession = loadSession();
 
-  // ── UI ──
+export const useStore = create((set) => ({
+  // Auth
+  isLoggedIn: savedSession?.isLoggedIn || false,
+  currentUser: savedSession?.currentUser || null,
+  authToken: savedSession?.token || null,
 
-  theme:
-    typeof window !== "undefined"
-      ? localStorage.getItem("fiip_theme") || "dark"
-      : "dark",
-  fontSize:
-    typeof window !== "undefined"
-      ? parseInt(localStorage.getItem("fiip_fontSize") || "15")
-      : 15,
-  activeTab: "overview",
-  backendStatus: "checking",
+  // Theme
+  theme: localStorage.getItem("flip-theme") || "dark",
 
-  setTheme: (theme) => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("fiip_theme", theme);
-    set({ theme });
-  },
-
-  toggleTheme: () => {
-    const next = get().theme === "dark" ? "light" : "dark";
-    get().setTheme(next);
-  },
-
-  setFontSize: (size) => {
-    const clamped = Math.max(12, Math.min(22, size));
-    const root = document.documentElement;
-    root.style.setProperty("--font-size-base", `${clamped}px`);
-    localStorage.setItem("fiip_fontSize", clamped);
-    set({ fontSize: clamped });
-  },
-
-  setActiveTab: (tab) => set({ activeTab: tab }),
-  setBackendStatus: (s) => set({ backendStatus: s }),
-
-  // ── Toasts ───────────────────────────────────────────────────
-  toasts: [],
-
-  addToast: (message, type = "info") => {
-    const toast = makeToast(message, type);
-    set((s) => ({ toasts: [...s.toasts, toast] }));
-    setTimeout(() => get().removeToast(toast.id), 3200);
-  },
-
-  removeToast: (id) =>
-    set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
-
-  // ── MFA ──────────────────────────────────────────────────────
-
+  // MFA (only for registration)
   mfaVisible: false,
   mfaPending: null,
+
+  // Documents
+  uploadedFiles: [],
+
+  // Actions
+  login: (token, user) => {
+    const session = saveSession(token, user);
+    localStorage.setItem("token", token);
+    localStorage.setItem("fiip_user", JSON.stringify(user));
+    set({
+      isLoggedIn: true,
+      currentUser: user,
+      authToken: token,
+    });
+  },
+
+  logout: () => {
+    clearSession();
+    set({
+      isLoggedIn: false,
+      currentUser: null,
+      authToken: null,
+      mfaVisible: false,
+      mfaPending: null,
+    });
+  },
+
   showMFA: (userData) => set({ mfaVisible: true, mfaPending: userData }),
   hideMFA: () => set({ mfaVisible: false, mfaPending: null }),
 
-  // ── Chat ─────────────────────────────────────────────────────
-
-  chatOpen: false,
-  chatMessages: [
-    {
-      id: 1,
-      role: "bot",
-      text: "👋 Hello! I'm your victim support assistant. How can I help?",
-    },
-  ],
-
-  toggleChat: () => set((s) => ({ chatOpen: !s.chatOpen })),
-  addChatMessage: (text, role) =>
-    set((s) => ({
-      chatMessages: [...s.chatMessages, { id: Date.now(), role, text }],
-    })),
-
-  // ── Documents ────────────────────────────────────────────────
-  uploadedFiles: [],
-
-  setUploadedFiles: (files) => set({ uploadedFiles: files }),
+  setTheme: (theme) => {
+    localStorage.setItem("flip-theme", theme);
+    set({ theme });
+  },
 
   addUploadedFile: (file) =>
-    set((s) => ({
-      uploadedFiles: [...s.uploadedFiles, file],
-    })),
-
+    set((state) => ({ uploadedFiles: [...state.uploadedFiles, file] })),
   removeUploadedFile: (id) =>
-    set((s) => ({
-      uploadedFiles: s.uploadedFiles.filter((f) => f.id !== id),
-    })),
-
-  // ── Backend ──────────────────────────────────────────────────
-  checkBackend: async () => {
-    set({ backendStatus: "checking" });
-    try {
-      const res = await fetch("https://flip-backend.vercel.app/api/v1", {
-        signal: AbortSignal.timeout(3000),
-      });
-      set({ backendStatus: res.ok ? "online" : "partial" });
-    } catch {
-      set({ backendStatus: "offline" });
-    }
-  },
+    set((state) => ({ uploadedFiles: state.uploadedFiles.filter((f) => f.id !== id) })),
+  setUploadedFiles: (files) => set({ uploadedFiles: files }),
 }));
