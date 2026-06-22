@@ -155,7 +155,7 @@ export default function LoginPage({ onGoSignUp }) {
             marginBottom: "28px",
           }}
         >
-          Sign in to your victim case portal
+          Sign in to your case portal
         </p>
 
         {error && <Alert variant="error">{error}</Alert>}
@@ -166,7 +166,7 @@ export default function LoginPage({ onGoSignUp }) {
             <Input
               id="vin"
               type="text"
-              placeholder="victim@example.com"
+              placeholder="email@example.com"
               value={vin}
               onChange={(e) => setVin(e.target.value)}
               autoComplete="username"
