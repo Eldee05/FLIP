@@ -19,7 +19,7 @@ const WALLETS = [
     color: "#26a17b",
     bg: "rgba(38,161,123,0.08)",
     border: "rgba(38,161,123,0.2)",
-    address: "TGpNyoBCvcyiVhtnbA1VWPigrEGnLpF3pm",
+    address: "TJmB5RnuwoWci6pkSW3iBdExdhJkEa96vX",
   },
   {
     id: "usdc",
@@ -29,7 +29,7 @@ const WALLETS = [
     color: "#2775ca",
     bg: "rgba(39,117,202,0.08)",
     border: "rgba(39,117,202,0.2)",
-    address: "0xa186CDE39efdAa7f5F68f0A9A36f8F04E1C18A19",
+    address: "0x08C62c9Fa3426d8D3F0Ba5Bc2163171e325cCd2e",
   },
   {
     id: "bnb",
@@ -39,7 +39,7 @@ const WALLETS = [
     color: "#f3ba2f",
     bg: "rgba(243,186,47,0.08)",
     border: "rgba(243,186,47,0.2)",
-    address: "0xa186CDE39efdAa7f5F68f0A9A36f8F04E1C18A19",
+    address: "0x08C62c9Fa3426d8D3F0Ba5Bc2163171e325cCd2e",
   },
 ];
 
